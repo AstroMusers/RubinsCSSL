@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.ipython/
+.ipynb_checkpoints/
+*.egg-info/
+build/
+dist/
+
+# Large astronomy data and generated products
+*.fits
+*.fits.fz
+*.asdf
+*.hdf5
+*.h5
+outputs/
+data/
+butler/
