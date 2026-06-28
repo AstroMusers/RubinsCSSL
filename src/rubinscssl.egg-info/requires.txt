@@ -1,0 +1,7 @@
+numpy
+astropy
+slsim
+
+[dev]
+pytest
+ruff
