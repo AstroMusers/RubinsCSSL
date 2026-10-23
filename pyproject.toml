@@ -21,6 +21,7 @@ plots = [
     "matplotlib",
     "corner",
     "tdpy",
+    "bokeh",
 ]
 dev = [
     "pytest",

@@ -1,3 +1,4 @@
+import json
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.colors import to_rgba
@@ -110,3 +111,66 @@ def test_corner_suite_forwards_theme_without_mutating_input(population, tmp_path
         assert figure.get_facecolor() == to_rgba(plot_background_colors(typeplotback)[0])
         plt.close(figure)
     pd.testing.assert_frame_equal(population, original_data)
+
+
+def test_band_performance_bokeh_uses_summary_data_and_writes_html(tmp_path, monkeypatch):
+    pytest.importorskip('bokeh')
+    from tdpy import plotting as tdpy_plotting
+
+    summary = pd.DataFrame({
+        'curve_type': ['observed'] * 3,
+        'estimator': ['spline'] * 3,
+        'band': ['g', 'r', 'i'],
+        'assessable_fraction_given_attempted': [0.5, 0.6, 0.7],
+        'accuracy_fraction_given_assessable': [0.8, 0.7, 0.9],
+        'end_to_end_accurate_fraction': [0.4, 0.42, 0.63],
+    })
+    output_path = tmp_path / 'band_performance.html'
+    captured = {}
+    save_bokeh_html = tdpy_plotting.save_bokeh_html
+
+    def capture_and_save(figure, path, **kwargs):
+        captured['data'] = next(
+            renderer.data_source.data
+            for renderer in figure.renderers
+            if hasattr(renderer, 'data_source')
+        )
+        return save_bokeh_html(figure, path, **kwargs)
+
+    monkeypatch.setattr(tdpy_plotting, 'save_bokeh_html', capture_and_save)
+    result = plot_utils.plot_band_performance_bokeh(
+        summary,
+        curve_type='observed',
+        estimator='spline',
+        filename=output_path,
+    )
+
+    assert result == output_path
+    assert 'band' in captured['data']
+    np.testing.assert_array_equal(captured['data']['band'], ['g', 'r', 'i'])
+    np.testing.assert_allclose(
+        captured['data']['end_to_end_accurate_fraction'], [0.4, 0.42, 0.63]
+    )
+    html = output_path.read_text(encoding='utf-8')
+    assert 'Bokeh' in html
+    assert '/' + 'Users/' not in html
+
+
+def test_synthetic_feature_notebook_uses_pipeline_and_keeps_paths_private():
+    from pathlib import Path
+
+    path = Path(__file__).parents[1] / 'examples' / 'synthetic_feature_pipeline.ipynb'
+    print('Reading from examples/synthetic_feature_pipeline.ipynb...')
+    notebook = json.loads(path.read_text(encoding='utf-8'))
+    code = '\n'.join(
+        ''.join(cell['source'])
+        for cell in notebook['cells']
+        if cell['cell_type'] == 'code'
+    )
+    document = json.dumps(notebook)
+
+    assert 'from rubinscssl.curve_features import build_population_analysis_tables' in code
+    assert 'build_population_analysis_tables(' in code
+    assert 'plot_band_performance_bokeh(' in code
+    assert 'explicitly synthetic' in document
+    assert '/' + 'Users/' not in document

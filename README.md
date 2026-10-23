@@ -13,8 +13,28 @@ Set `RUBINSCSSL_PATH` to the checkout directory when the package is used from a 
 
 ## Plotting
 
-Install `.[plots]` for the corner and band-performance plots. These functions
-and `make_population_corner_suite()` accept `typeplotback='dark'` for black
-backgrounds with white axes. The default is white with black axes, or the
-theme selected by an enclosing TDpy `plot_style()` block. Returned figures
-and saved files share the same theme without changing later plots.
+Install `.[plots]` for the corner, static band-performance, and interactive
+Bokeh plots.
+
+```bash
+python -m pip install -e '.[plots]'
+```
+
+`plot_band_performance()` and `plot_band_performance_bokeh()` render the same
+assessability, conditional-accuracy, and end-to-end fractions from the summary
+table. The HTML version adds hover values and a legend that can hide series.
+Both plotting functions and `make_population_corner_suite()` accept
+`typeplotback='dark'` for black backgrounds with white axes. The default is
+white with black axes, or the theme selected by an enclosing TDpy
+`plot_style()` block. Returned figures and saved files share the selected theme
+without changing later plots.
+
+## Example
+
+The [synthetic feature-pipeline notebook](examples/synthetic_feature_pipeline.ipynb)
+passes explicitly toy dual-image curves and toy fit assessments through
+`build_population_analysis_tables()`. It generates static and Bokeh band
+summaries under the ignored `visuals/` directory. These values exercise the
+feature and plotting APIs; they are not Rubin observations, PyCS3 fits, or a
+measurement of time-delay recovery performance. The small deterministic
+example runs quickly and needs no PyCS3 installation.

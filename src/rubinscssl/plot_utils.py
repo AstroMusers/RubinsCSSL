@@ -306,6 +306,79 @@ def plot_band_performance(
     return axis.figure
 
 
+def plot_band_performance_bokeh(
+    band_summary: pd.DataFrame,
+    *,
+    curve_type: str,
+    estimator: str,
+    filename: str | Path,
+    typeplotback: str | None = None,
+):
+    """Save the same band-performance summary as interactive standalone HTML."""
+    from bokeh.models import ColumnDataSource, HoverTool
+    from bokeh.plotting import figure as bokeh_figure
+    from bokeh.transform import dodge
+    from tdpy.plotting import save_bokeh_html
+
+    data = band_summary.loc[
+        (band_summary["curve_type"] == curve_type)
+        & (band_summary["estimator"] == estimator)
+    ].copy()
+    metric_columns = {
+        "assessable_fraction_given_attempted": "Assessable | attempted",
+        "accuracy_fraction_given_assessable": "Accurate | assessable",
+        "end_to_end_accurate_fraction": "End-to-end accurate",
+    }
+    data = data.set_index("band").reindex(["g", "r", "i"])
+    data = data.loc[data[list(metric_columns)].notna().all(axis=1)].reset_index()
+    if data.empty:
+        raise ValueError(
+            f"No complete band-summary rows for curve_type={curve_type!r}, "
+            f"estimator={estimator!r}."
+        )
+    values = data[list(metric_columns)].to_numpy(dtype=float)
+    if not np.isfinite(values).all() or np.any((values < 0.0) | (values > 1.0)):
+        raise ValueError("Band-performance fractions must be finite and in [0, 1].")
+
+    source = ColumnDataSource(data)
+    plot = bokeh_figure(
+        title=f"{curve_type.capitalize()} {estimator} performance by band",
+        width=760,
+        height=460,
+        x_range=["g", "r", "i"],
+        y_range=(0.0, 1.0),
+        sizing_mode="stretch_width",
+        x_axis_label="LSST band",
+        y_axis_label="Fraction",
+        tools="pan,wheel_zoom,box_zoom,reset,save",
+    )
+    colors = ("#A51417", "#16697A", "#6A8F3A")
+    renderers = []
+    for index, (column, label) in enumerate(metric_columns.items()):
+        renderer = plot.vbar(
+            x=dodge("band", -0.25 + index * 0.25, range=plot.x_range),
+            top=column,
+            width=0.22,
+            source=source,
+            color=colors[index],
+            legend_label=label,
+        )
+        renderers.append(renderer)
+    plot.legend.location = "top_left"
+    plot.legend.click_policy = "hide"
+    plot.add_tools(HoverTool(
+        renderers=renderers,
+        tooltips=[("Band", "@band"), ("Rate", "$y{0.00}")],
+    ))
+    plot.grid.visible = False
+    return save_bokeh_html(
+        plot,
+        filename,
+        title=f"{curve_type.capitalize()} {estimator} performance by band",
+        typeplotback=typeplotback,
+    )
+
+
 @plot_style()
 def make_population_corner_suite(
     analysis_table: pd.DataFrame,
