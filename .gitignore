@@ -18,4 +18,5 @@ dist/
 *.h5
 outputs/
 data/
+visuals/
 butler/
