@@ -12,13 +12,24 @@ license = {text = "MIT"}
 dependencies = [
     "numpy",
     "astropy",
+    "pandas",
     "slsim",
 ]
 
 [project.optional-dependencies]
+plots = [
+    "matplotlib",
+    "corner",
+    "tdpy",
+]
 dev = [
     "pytest",
     "ruff",
+]
+time-delays = [
+    "pycs3>=3.0.4",
+    "multiprocess>=0.70.16",
+    "threadpoolctl",
 ]
 
 [tool.setuptools.packages.find]
@@ -26,4 +37,5 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
 addopts = "-ra"

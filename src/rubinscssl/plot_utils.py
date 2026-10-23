@@ -11,6 +11,7 @@ from typing import Sequence
 
 import numpy as np
 import pandas as pd
+from tdpy.plotting import apply_plot_theme, configure_plot_style, plot_background_colors, plot_style
 
 def _prepare_corner_frame(
     dataframe: pd.DataFrame,
@@ -55,6 +56,7 @@ def _corner_ranges(values: np.ndarray) -> list[tuple[float, float]]:
     return ranges
 
 
+@plot_style()
 def plot_binary_corner(
     dataframe: pd.DataFrame,
     *,
@@ -68,12 +70,15 @@ def plot_binary_corner(
     bins: int = 20,
     smooth: float | None = 1.0,
     minimum_rows_per_group: int = 2,
+    typeplotback: str | None = None,
 ):
     """Overlay feature distributions for a binary outcome.
 
     Constant or fully missing dimensions are removed automatically. The
     returned dictionary records which dimensions and groups were plotted.
     """
+    if typeplotback is not None:
+        configure_plot_style(typeplotback)
     if len(features) != len(labels):
         raise ValueError("features and labels must have equal lengths.")
 
@@ -164,11 +169,12 @@ def plot_binary_corner(
         frameon=False,
     )
     figure.suptitle(title, fontsize=15, y=1.01)
+    apply_plot_theme(figure)
 
     if filename is not None:
         filename = Path(filename)
         filename.parent.mkdir(parents=True, exist_ok=True)
-        figure.savefig(filename, bbox_inches="tight", dpi=200)
+        figure.savefig(filename, bbox_inches="tight", dpi=200, facecolor=figure.get_facecolor())
 
     return {
         "figure": figure,
@@ -178,6 +184,7 @@ def plot_binary_corner(
     }
 
 
+@plot_style()
 def plot_continuous_error_corner(
     dataframe: pd.DataFrame,
     *,
@@ -191,8 +198,11 @@ def plot_continuous_error_corner(
     filename: str | Path | None = None,
     bins: int = 20,
     smooth: float | None = 1.0,
+    typeplotback: str | None = None,
 ):
     """Make a corner plot that includes a continuous delay-error axis."""
+    if typeplotback is not None:
+        configure_plot_style(typeplotback)
     if len(features) != len(labels):
         raise ValueError("features and labels must have equal lengths.")
 
@@ -226,13 +236,15 @@ def plot_continuous_error_corner(
         plot_density=True,
         plot_contours=True,
         quiet=True,
+        color=plot_background_colors()[1],
     )
     figure.suptitle(title, fontsize=15, y=1.01)
+    apply_plot_theme(figure)
 
     if filename is not None:
         filename = Path(filename)
         filename.parent.mkdir(parents=True, exist_ok=True)
-        figure.savefig(filename, bbox_inches="tight", dpi=200)
+        figure.savefig(filename, bbox_inches="tight", dpi=200, facecolor=figure.get_facecolor())
 
     return {
         "figure": figure,
@@ -241,14 +253,18 @@ def plot_continuous_error_corner(
     }
 
 
+@plot_style()
 def plot_band_performance(
     band_summary: pd.DataFrame,
     *,
     curve_type: str,
     estimator: str,
     filename: str | Path | None = None,
+    typeplotback: str | None = None,
 ):
     """Plot assessability, conditional accuracy, and end-to-end accuracy."""
+    if typeplotback is not None:
+        configure_plot_style(typeplotback)
     data = band_summary.loc[
         (band_summary["curve_type"] == curve_type)
         & (band_summary["estimator"] == estimator)
@@ -280,15 +296,17 @@ def plot_band_performance(
     )
     axis.legend(labels)
     axis.figure.tight_layout()
+    apply_plot_theme(axis.figure)
 
     if filename is not None:
         filename = Path(filename)
         filename.parent.mkdir(parents=True, exist_ok=True)
-        axis.figure.savefig(filename, bbox_inches="tight", dpi=200)
+        axis.figure.savefig(filename, bbox_inches="tight", dpi=200, facecolor=axis.figure.get_facecolor())
 
     return axis.figure
 
 
+@plot_style()
 def make_population_corner_suite(
     analysis_table: pd.DataFrame,
     *,
@@ -299,6 +317,7 @@ def make_population_corner_suite(
     labels: Sequence[str],
     bands: Sequence[str] = ("g", "r", "i"),
     minimum_rows: int = 5,
+    typeplotback: str | None = None,
 ) -> dict[str, dict]:
     """Create global and per-band corner plots for one analysis branch.
 
@@ -307,6 +326,8 @@ def make_population_corner_suite(
     available light curves and therefore retains model-gate failures in the
     denominator.
     """
+    if typeplotback is not None:
+        configure_plot_style(typeplotback)
     output_directory = Path(output_directory)
     output_directory.mkdir(parents=True, exist_ok=True)
 
