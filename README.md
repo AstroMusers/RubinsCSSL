@@ -34,7 +34,6 @@ without changing later plots.
 The [synthetic feature-pipeline notebook](examples/synthetic_feature_pipeline.ipynb)
 passes explicitly toy dual-image curves and toy fit assessments through
 `build_population_analysis_tables()`. It generates static and Bokeh band
-summaries under the ignored `visuals/` directory. These values exercise the
-feature and plotting APIs; they are not Rubin observations, PyCS3 fits, or a
-measurement of time-delay recovery performance. The small deterministic
-example runs quickly and needs no PyCS3 installation.
+summaries under the ignored `visuals/` directory. The synthetic example does
+not produce Rubin observations or PyCS3 fits and measures no time-delay recovery
+performance. It runs quickly and needs no PyCS3 installation.
