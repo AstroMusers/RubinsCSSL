@@ -3,6 +3,13 @@ Rubin's repeated observations of cluster-scale strong lenses let us study their 
 
 ## Installation
 
+Use Python 3.13 or newer. Install the package with the interpreter that will run
+the analysis and tests.
+
+```bash
+python -m pip install -e .
+```
+
 The PyCS3 time-delay fitting modules use the `time-delays` extra.
 
 ```bash
@@ -10,6 +17,20 @@ python -m pip install -e '.[time-delays]'
 ```
 
 Set `RUBINSCSSL_PATH` to the checkout directory when the package is used from a different location. If it is unset, the package uses its checkout root. `data/` and `visuals/` are ignored by Git for local inputs and generated figures.
+
+## Tests
+
+Install the test, plotting, and time-delay dependencies before running the full
+suite.
+
+```bash
+python -m pip install -e '.[dev,plots,time-delays]'
+python -m pytest
+```
+
+The compiled Rubin Science Pipelines are a separate environment prerequisite.
+Their integration check is skipped when those modules are unavailable. SLSim is
+a required package dependency, so a missing SLSim installation remains an error.
 
 ## Plotting
 
@@ -32,8 +53,9 @@ without changing later plots.
 ## Example
 
 The [synthetic feature-pipeline notebook](examples/synthetic_feature_pipeline.ipynb)
-passes explicitly toy dual-image curves and toy fit assessments through
-`build_population_analysis_tables()`. It generates static and Bokeh band
-summaries under the ignored `visuals/` directory. The synthetic example does
-not produce Rubin observations or PyCS3 fits and measures no time-delay recovery
-performance. It runs quickly and needs no PyCS3 installation.
+builds model and noisy observed light curves for six toy lens systems in the
+`g`, `r`, and `i` bands. It supplies illustrative fit outcomes, then summarizes
+feature availability, assessability, delay accuracy, and error by band. The
+static plots need no PyCS3 installation. Install the optional `plots` extra for
+the Bokeh summary. These fixtures exercise the pipeline and provide no estimate
+of Rubin time-delay recovery.
